@@ -17,15 +17,63 @@ docker pull rugolini/couchbase-server-nosetup
 
 # Running
 
-Running container
+## Run container
 
 ```sh
-# Create mount point if needed
-mkdir -p /opt/couchbase/var
 # Run container
 docker run -d --name couchbase-server-nosetup \
   -p 8091-8093:8091-8093 \
   -p 11210:11210 \
-  -v /opt/couchbase/var:/opt/couchbase/var \
+  -p 4369:4369 \
+  -p 21100-21299:21100-21299 \
+  rugolini/couchbase-server-nosetup
+```
+
+## Run in cluster
+
+### Create network
+
+```sh
+docker network create couchbase
+```
+
+### Create node1
+
+```sh
+# Create node1
+docker run -ti --name node1.cluster \
+  -p 8091-8093:8091-8093 \
+  -p 11210:11210 \
+  -p 4369:4369 \
+  -p 21100-21299:21100-21299 \
+  -h node1.cluster \
+  --network=couchbase \
+  rugolini/couchbase-server-nosetup
+```
+
+### joining node2 to node1
+
+Rebalancing automatically
+
+```sh
+# Joining node1
+docker run -ti --name node2.cluster \
+  --network=couchbase \
+  -h node2.cluster \
+  -e CLUSTER_HOST=node1.cluster \
+  -e CLUSTER_REBALANCE=true \
+  rugolini/couchbase-server-nosetup
+```
+
+### joining node3 to node1
+
+Rebalancing manually
+
+```sh
+# Joining node1
+docker run -ti --name node3.cluster \
+  --network=couchbase \
+  -h node3.cluster \
+  -e CLUSTER_HOST=node1.cluster \
   rugolini/couchbase-server-nosetup
 ```
