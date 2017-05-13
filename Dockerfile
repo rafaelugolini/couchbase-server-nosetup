@@ -14,6 +14,4 @@ ENV CLUSTER_REBALANCE ""
 
 COPY entrypoint.sh /config-entrypoint.sh
 
-EXPOSE 8091
-
 ENTRYPOINT ["/config-entrypoint.sh"]
