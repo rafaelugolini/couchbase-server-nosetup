@@ -5,19 +5,21 @@ set -m
 # Send it to background
 /entrypoint.sh couchbase-server &
 
-# Variable used to echo with steps
-i=1
 # Check if couchbase server is up
 check_db() {
   curl --silent http://127.0.0.1:8091/pools > /dev/null
   echo $?
 }
+
+# Variable used in echo
+i=1
 # Echo with
 numbered_echo() {
   echo "[$i] $@"
   i=`expr $i + 1`
 }
 
+# Parse JSON and get nodes from the cluster
 read_nodes() {
   cmd="import sys,json;"
   cmd="${cmd} print(','.join([node['otpNode']"
@@ -49,7 +51,6 @@ numbered_echo "Setting hostname"
 curl --silent "http://${HOSTNAME}:8091/node/controller/rename" \
   -d hostname=${HOSTNAME}
 
-echo "Cluster Host ${CLUSTER_HOST}"
 if [[ ${CLUSTER_HOST} ]];then
   numbered_echo "Joining cluster ${CLUSTER_HOST}"
   curl --silent -u ${USERNAME}:${PASSWORD} \
@@ -58,9 +59,10 @@ if [[ ${CLUSTER_HOST} ]];then
     -d user="${USERNAME}" \
     -d password="${PASSWORD}" \
     -d services="${SERVICES}" > /dev/null
-  # "Unexpected server error without the sleep 2
-  sleep 2
+
   if [[ ${CLUSTER_REBALANCE} ]]; then
+    # "Unexpected server error without the sleep 2
+    sleep 2
     numbered_echo "Retrieving nodes"
     known_nodes=$(
       curl --silent -u ${USERNAME}:${PASSWORD} http://${CLUSTER_HOST}:8091/pools/default | read_nodes

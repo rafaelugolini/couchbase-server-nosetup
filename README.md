@@ -21,7 +21,8 @@ docker pull rugolini/couchbase-server-nosetup
 
 ```sh
 # Run container
-docker run -d --name couchbase-server-nosetup \
+docker run -ti --name couchbase-server-nosetup \
+  -h node1.cluster \
   -p 8091-8093:8091-8093 \
   -p 11210:11210 \
   -p 4369:4369 \
